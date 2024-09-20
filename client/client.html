@@ -1,13 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Our simple HTTP server</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
-  
-  <script>
 
+  <script>
+    //Handles our FETCH response. This function is async because it
+    //contains an await.
+    const handleResponse = async (response) =>
+    {
+
+      //Grab the content section
+      const content = document.querySelector('#content');
+
+      // Change the text in the h1 element based on the status code
+      switch (response.status)
+      {
+        case 200: // Success
+          content.innerHTML = `<b>Success</b>`;
+          break;
+        case 400: // Bad request
+          content.innerHTML = '<b>Bad Request</b>';
+          break;
+        case 401: // Unauthorized
+          content.innerHTML = '<b>Unauthorized</b>';
+          return;
+        case 403: // Forbidden
+          content.innerHTML = `<b>Forbidden</b>`;
+          break;
+        case 500: // Internal server error
+          content.innerHTML = `<b>Internal Server Error</b>`;
+          break;
+        case 501: // Not Implemented
+          content.innerHTML = `<b>Not Implemented</b>`;
+          break;
+        case 404: // Not found
+          content.innerHTML = `<b>Not Found</b>`;
+          break;
+        default:
+          content.innerHTML = `Error code not implemented by client.`;
+          break;
+      }
+
+      let obj = await response.json();
+      console.log(obj);
+      content.innerHTML += `<p>${obj.message}</p>`;
+    };
+
+    //Uses fetch to send a postRequest. Marksed as async because we use await
+    //within it.
+    const sendGet = async (endpointForm, typeForm) =>
+    {
+      // Grab all the info from the form
+      const endpoint = endpointForm.value;
+      const dataType = typeForm.value;
+
+      let response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'Accept': dataType,
+        },
+      });
+
+      //Once we have a response, handle it.
+      handleResponse(response);
+    };
+
+    const init = () =>
+    {
+      const endpointForm = document.querySelector('#page');
+      const typeForm = document.querySelector('#type');
+      const submitBtn = document.querySelector('#send');
+
+      const getData = (e) =>
+      {
+        e.preventDefault();
+        sendGet(endpointForm, typeForm);
+        return false;
+      }
+
+      submitBtn.addEventListener('click', getData);
+    };
+
+    //When the window loads, run init.
+    window.onload = init;
   </script>
 </head>
+
 <body>
   <section id="top">
     <h3>Status Code Tests</h3>
@@ -29,4 +109,5 @@
   <section id="content">
   </section>
 </body>
+
 </html>
